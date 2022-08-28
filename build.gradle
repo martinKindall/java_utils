@@ -1,0 +1,57 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.6.20'
+    id("elect86.magik") version "0.2.4"
+    id 'maven-publish'
+}
+
+group 'org.codigomorsa'
+version '1.0-SNAPSHOT'
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+}
+
+publishing {
+    publications {
+        // you can pass a name to overwrite the default "github"
+        // createGithubPublication("my-name")
+        createGithubPublication { this: MavenPublication
+            groupId = "org.gradle.sample"
+            artifactId = "prova"
+            version = "0.1"
+
+            from(components["java"])
+        }.github {
+            // this adds another (snapshot) publication, copying from the previous one:
+            // - gav coordinates
+            // - component type (java, javaPlatform or war)
+            // - name, by default appended with the `Snapshot` postfix,
+            // eg: publishMavenPublicationToGithubRepository ->
+            // ->  publishMavenSnapshotPublicationToGithubRepository
+            addSnapshotPublication()
+        }
+    }
+    // don't use `repositories.github(..)`, it won't work
+    // the dsl construct is necessary to distinguish it from a consume-only repo
+    repositories {
+        github {
+            // this is superfluous since `github` is the default value, but it determines
+            // the token name to fetch and the consequent publishing task name
+            // eg: publishMavenPublicationToGithubRepository
+            name = "github"
+
+            // this is mandatory instead: $owner/$repo on github domain
+            domain = "kotlin-graphics/mary" // aka https://github.com/kotlin-graphics/mary
+        }
+    }
+}
